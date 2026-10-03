@@ -21,16 +21,16 @@ jobs:
       - name: Install Qt system libraries
         run: |
           sudo apt-get update
-          sudo apt-get install -y libegl1 libgl1 libxkbcommon0 libdbus-1-3 libfontconfig1 libglib2.0-0
+          sudo apt-get install -y libegl1 libgl1 libxkbcommon0 libdbus-1-3 libfontconfig1 libglib2.0-0 fonts-noto-cjk
       - name: Install dependencies
-        run: pip install "PySide6>=6.6,<7" "psutil>=5.9" pytest pytest-timeout
+        run: pip install "PySide6>=6.6,<7" "psutil>=5.9" pytest pytest-timeout pytest-xdist
       - name: Run logic tests (offscreen)
         # CI 聚焦纯逻辑回归（数据/协议/算法/判题）。Qt 重 UI 测试与真实
         # 回环网络测试在本地跑（tools/pytest_stability.py + offscreen 全量）。
         env:
           QT_QPA_PLATFORM: offscreen
         run: |
-          python -m pytest tests -o addopts= -q --timeout=120 --timeout-method=signal \
+          python -m pytest tests -o addopts= -q --timeout=120 --timeout-method=signal -n 2 \
             --ignore=tests/smoke_gui.py \
             --ignore=tests/test_code_editor.py \
             --ignore=tests/test_completion.py \
