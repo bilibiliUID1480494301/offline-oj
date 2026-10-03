@@ -12,7 +12,7 @@ concurrency:
 jobs:
   test:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -23,22 +23,16 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y libegl1 libgl1 libxkbcommon0 libdbus-1-3 libfontconfig1 libglib2.0-0 fonts-noto-cjk
       - name: Install dependencies
-        run: pip install "PySide6>=6.6,<7" "psutil>=5.9" pytest pytest-timeout pytest-xdist
-      - name: Run logic tests (offscreen)
-        # CI 聚焦纯逻辑回归（数据/协议/算法/判题）。Qt 重 UI 测试与真实
-        # 回环网络测试在本地跑（tools/pytest_stability.py + offscreen 全量）。
+        run: pip install "PySide6>=6.6,<7" "psutil>=5.9" pytest pytest-timeout
+      - name: Run core logic tests
+        # CI 跑纯算法/协议/数据回归白名单：加密、身份摘要、报文、会话状态机、
+        # 雷同检测、名单/入场/成绩/分值——数秒完成、无慢点。Qt 重 UI 与真实
+        # 编译判题套件走本地 offscreen 全量回归（tools/pytest_stability.py）。
         env:
           QT_QPA_PLATFORM: offscreen
-        run: |
-          python -m pytest tests -o addopts= -q --timeout=120 --timeout-method=signal -n 2 \
-            --ignore=tests/smoke_gui.py \
-            --ignore=tests/test_code_editor.py \
-            --ignore=tests/test_completion.py \
-            --ignore=tests/test_exam_code_view.py \
-            --ignore=tests/test_exam_settings.py \
-            --ignore=tests/test_export_ui.py \
-            --ignore=tests/test_net_lan.py \
-            --ignore=tests/test_similarity_ui.py \
-            --ignore=tests/test_ui_dedup.py \
-            --ignore=tests/test_ui_shortcuts.py \
-            --ignore=tests/test_ui_theme.py
+        run: >
+          python -m pytest tests/test_net_crypto.py tests/test_net_identity.py
+          tests/test_net_protocol.py tests/test_net_session.py tests/test_similarity.py
+          tests/test_similarity_export.py tests/test_records.py tests/test_roster.py
+          tests/test_exam_access.py tests/test_point_values.py
+          -o addopts= -q --timeout=120 --timeout-method=signal
