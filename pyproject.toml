@@ -1,0 +1,63 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "offline-oj"
+version = "2.0.0"
+description = "离线 OJ 系统 —— 面向 Windows 10/11 的本地代码评测客户端"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "Proprietary" }
+authors = [{ name = "Offline OJ Project" }]
+keywords = ["oj", "judge", "offline", "windows", "desktop"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: Win32 (MS Windows)",
+    "Intended Audience :: Education",
+    "Operating System :: Microsoft :: Windows :: Windows 10",
+    "Operating System :: Microsoft :: Windows :: Windows 11",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Education",
+]
+
+dependencies = [
+    "PySide6>=6.6,<7",
+    "psutil>=5.9",
+]
+
+[project.optional-dependencies]
+build = ["pyinstaller>=6.6", "pillow>=10.0"]
+dev = ["pytest>=8.0", "pytest-qt>=4.4"]
+
+[project.gui-scripts]
+offline-oj = "offline_oj.app:main"
+
+[project.scripts]
+offline-oj-cli = "offline_oj.cli:main"
+
+[tool.setuptools]
+packages = [
+    "offline_oj",
+    "offline_oj.core",
+    "offline_oj.ui",
+    "offline_oj.ui.panels",
+    "offline_oj.win32",
+]
+
+[tool.setuptools.package-data]
+offline_oj = ["assets/*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+# 保留策略默认只留最近 3 轮，而且是**边跑边删**：同一批用例每开一个新的
+# 编号临时目录，就会删掉最老的那一个 —— 删的还是一个塞满题面快照与源码的
+# 目录树。在本机的沙箱里（一次最多删 50 个文件就要逐个确认），这种"每几条
+# 用例删一次、每次上百个文件"的节奏必然被拦，表现为成片的
+# ``ERROR at setup``（真实原因藏在 stderr 的 SAFE_DELETE 一行里，极难认出）。
+# 改成"全部保留、永不回收"：一次全量大约多占几百 MB，跑完随 build/ 一起清。
+tmp_path_retention_count = "1000"
+tmp_path_retention_policy = "all"

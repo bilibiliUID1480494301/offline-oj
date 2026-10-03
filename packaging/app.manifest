@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!--
+  应用清单：Windows 应用的"身份证"。
+
+  这里声明了四件对用户体验有直接影响的事：
+  1. asInvoker        —— 不请求管理员权限。评测是在用户自己的权限下跑代码，
+                          提权既没必要，又会触发 UAC 弹窗、让"拖文件到窗口"失效。
+  2. PerMonitorV2     —— 高 DPI 感知，多显示器不同缩放比例下界面依然清晰。
+  3. longPathAware    —— 支持超过 260 字符的路径（深层目录里的题库/资源）。
+  4. activeCodePage   —— 进程默认使用 UTF-8 代码页，避免中文路径与输出乱码。
+  另外声明 Common-Controls 6.0，才能拿到现代视觉样式的控件。
+-->
+<assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0">
+  <assemblyIdentity
+      type="win32"
+      name="OfflineOJ.Desktop.Client"
+      version="2.0.0.0"
+      processorArchitecture="*"/>
+
+  <trustInfo xmlns="urn:schemas-microsoft-com:asm.v3">
+    <security>
+      <requestedPrivileges>
+        <requestedExecutionLevel level="asInvoker" uiAccess="false"/>
+      </requestedPrivileges>
+    </security>
+  </trustInfo>
+
+  <compatibility xmlns="urn:schemas-microsoft-com:compatibility.v1">
+    <application>
+      <!--
+        只声明实际能跑的版本。这里原来还列着 Windows 8.1，那是从模板抄来的，
+        和事实矛盾：**Qt 6 不支持 Windows 7 / 8.x**（官方原话），所以这个程序
+        在 8.1 上起不来，列在 supportedOS 里只会让人以为它能跑。
+        清单里的三个 Windows 设置也各有自己的系统下限，列出来备查：
+          PerMonitorV2 (dpiAwareness) —— Win10 1703+
+          longPathAware               —— Win10 1607+
+          activeCodePage=UTF-8        —— Win10 1903+
+        也就是说实际下限由 Qt 6 决定：Windows 10 1809。早于 1903 的系统上
+        activeCodePage 会被忽略（无害），中文路径由 Python 侧自己保证。
+      -->
+      <!-- Windows 10 / 11 -->
+      <supportedOS Id="{8e0f7a12-bfb3-4fe8-b9a5-48fd50a15a9a}"/>
+    </application>
+  </compatibility>
+
+  <application xmlns="urn:schemas-microsoft-com:asm.v3">
+    <windowsSettings>
+      <dpiAwareness xmlns="http://schemas.microsoft.com/SMI/2016/WindowsSettings">PerMonitorV2</dpiAwareness>
+      <dpiAware xmlns="http://schemas.microsoft.com/SMI/2005/WindowsSettings">true/pm</dpiAware>
+      <longPathAware xmlns="http://schemas.microsoft.com/SMI/2016/WindowsSettings">true</longPathAware>
+      <activeCodePage xmlns="http://schemas.microsoft.com/SMI/2019/WindowsSettings">UTF-8</activeCodePage>
+    </windowsSettings>
+  </application>
+
+  <dependency>
+    <dependentAssembly>
+      <assemblyIdentity
+          type="win32"
+          name="Microsoft.Windows.Common-Controls"
+          version="6.0.0.0"
+          processorArchitecture="*"
+          publicKeyToken="6595b64144ccf1df"
+          language="*"/>
+    </dependentAssembly>
+  </dependency>
+</assembly>
