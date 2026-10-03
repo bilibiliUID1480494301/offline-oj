@@ -27,4 +27,4 @@ jobs:
       - name: Run tests (offscreen)
         env:
           QT_QPA_PLATFORM: offscreen
-        run: pytest tests -o addopts= -q
+        run: python -m pytest tests -o addopts= -q
