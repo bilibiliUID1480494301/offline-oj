@@ -1,5 +1,10 @@
 # 离线 OJ 系统 v2.0
 
+[![CI](https://github.com/bilibiliUID1480494301/offline-oj/actions/workflows/ci.yml/badge.svg)](https://github.com/bilibiliUID1480494301/offline-oj/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Platform](https://img.shields.io/badge/platform-Windows%2010%20%2F%2011-blue)]
+
+
 面向 **Windows 10 / 11** 的本地代码评测客户端。在本机编译并运行 C / C++ / Python / Java  
 代码，按测试点判定结果，题库与提交记录完全保存在本地，不需要联网。
 
