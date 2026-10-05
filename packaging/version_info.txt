@@ -8,8 +8,8 @@
 
 VSVersionInfo(
   ffi=FixedFileInfo(
-    filevers=(2, 0, 0, 0),
-    prodvers=(2, 0, 0, 0),
+    filevers=(2, 1, 1, 0),
+    prodvers=(2, 1, 1, 0),
     mask=0x3F,
     flags=0x0,
     OS=0x40004,
@@ -24,12 +24,12 @@ VSVersionInfo(
         [
           StringStruct('CompanyName', 'Offline OJ Project'),
           StringStruct('FileDescription', '离线 OJ 系统'),
-          StringStruct('FileVersion', '2.0.0.0'),
+          StringStruct('FileVersion', '2.1.1.0'),
           StringStruct('InternalName', 'OfflineOJ'),
           StringStruct('LegalCopyright', 'Copyright (C) 2025 Offline OJ Project'),
           StringStruct('OriginalFilename', 'OfflineOJ.exe'),
           StringStruct('ProductName', '离线 OJ 系统'),
-          StringStruct('ProductVersion', '2.0.0'),
+          StringStruct('ProductVersion', '2.1.1'),
           StringStruct('Comments', '面向 Windows 10/11 的本地代码评测客户端'),
         ],
       ),
@@ -38,12 +38,12 @@ VSVersionInfo(
         [
           StringStruct('CompanyName', 'Offline OJ Project'),
           StringStruct('FileDescription', 'Offline OJ System'),
-          StringStruct('FileVersion', '2.0.0.0'),
+          StringStruct('FileVersion', '2.1.1.0'),
           StringStruct('InternalName', 'OfflineOJ'),
           StringStruct('LegalCopyright', 'Copyright (C) 2025 Offline OJ Project'),
           StringStruct('OriginalFilename', 'OfflineOJ.exe'),
           StringStruct('ProductName', 'Offline OJ System'),
-          StringStruct('ProductVersion', '2.0.0'),
+          StringStruct('ProductVersion', '2.1.1'),
           StringStruct('Comments', 'Local code judging client for Windows 10/11'),
         ],
       ),

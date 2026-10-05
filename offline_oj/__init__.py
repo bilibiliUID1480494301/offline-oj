@@ -25,8 +25,8 @@ __all__ = [
 ]
 
 #: 语义化版本号，打包时写入 Windows 版本资源，须与 packaging/version_info.txt 保持一致
-__version__ = "2.1.0"
-__version_info__ = (2, 0, 0, 0)
+__version__ = "2.1.1"
+__version_info__ = (2, 1, 1, 0)
 __author__ = "Offline OJ Project"
 
 APP_NAME = "OfflineOJ"

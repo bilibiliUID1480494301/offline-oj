@@ -73,6 +73,30 @@ Qt 最后一次支持 Win7 是 5.15 LTS、支持 8.1 是 5.12 LTS —— 也就�
 [^pywin]: Python 3.13 的 Windows 安装说明："Python 3.13 supports Windows 8.1 and newer. If you require Windows 7 support, please install Python 3.8."
 [^qt6]: Qt 官方《Host operating systems in Qt 6.0》："Both Windows 7 or 8.x version support will not be available for Qt 6." 现行的 [Supported Platforms](https://doc.qt.io/qt-6/supported-platforms.html) 列的是 "Windows 10 (1809 or later) / Windows 11"。
 
+## Python 函数 API
+
+不想碰界面、想在脚本里用内核的话：
+
+```python
+from offline_oj import api
+
+# 评测：喂代码 + 测试点，拿普通 dict（语言自动探测、编译器自动寻找）
+r = api.judge('a,b=map(int,input().split());print(a+b)',
+              [{'input': '1 2
+', 'output': '3
+'}])
+print(r['verdict'], r['passed'], '/', r['total'])
+
+# 雷同检测：喂提交记录 dict 列表
+report = api.detect_similarity(rows)
+
+# 成绩导出：docx / xlsx / txt / csv
+api.export_report('成绩单.docx', data, fmt='docx')
+```
+
+加密协议栈（零依赖 X25519 / SM4-GCM / ChaCha20-Poly1305）从
+`offline_oj.net.crypto` 导入，`SUPPORTED_SUITES` 可查支持的套件。
+
 ## 构建发布产物
 
 ```powershell

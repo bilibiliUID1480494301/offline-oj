@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "offline-oj"
-version = "2.1.0"
+version = "2.1.1"
 description = "离线 OJ 系统 —— 面向 Windows 10/11 的本地代码评测客户端"
 readme = "README.md"
 requires-python = ">=3.10"

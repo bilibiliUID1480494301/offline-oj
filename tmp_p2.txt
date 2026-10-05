@@ -1,0 +1,8 @@
+............................................................................................... [ 71%]
+......................................                                   [100%]
+============================== warnings summary ===============================
+offline_oj\core\models.py:319
+  E:\dev\oj\offline_oj\core\models.py:319: PytestCollectionWarning: cannot collect test class 'TestCase' because it has a __init__ constructor (from: tests/test_core.py)
+    @dataclass
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html

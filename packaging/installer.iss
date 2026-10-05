@@ -14,7 +14,7 @@
 
 #define AppName        "离线 OJ 系统"
 #define AppNameEn      "Offline OJ System"
-#define AppVersion     "2.0.0"
+#define AppVersion     "2.1.1"
 #define AppPublisher   "Offline OJ Project"
 #define AppExeName     "OfflineOJ.exe"
 #define AppFolder      "OfflineOJ"

@@ -15,3 +15,8 @@ problem_resources/
 welcome_shown.txt
 logs/
 *.log
+
+# 测试临时目录（pytest --basetemp）
+.pytest_tmp*/
+.bt_*/
+tmp_*.txt

@@ -1,0 +1,55 @@
+.................................................................. [ 13%]
+..................................................................................................... [ 33%]
+........................................................................ [ 47%]
+........................................................................ [ 61%]
+........................................................................ [ 76%]
+.........FF....................................................... [ 89%]
+......................................................           [100%]
+================================== FAILURES ===================================
+____________ VersionConsistencyTest.test_installer_matches_the_app ____________
+
+self = <test_packaging.VersionConsistencyTest testMethod=test_installer_matches_the_app>
+
+    def test_installer_matches_the_app(self):
+        match = re.search(r'^#define\s+AppVersion\s+"([^"]+)"', read_text("installer.iss"),
+                          re.MULTILINE)
+        self.assertIsNotNone(match, "installer.iss 里找不到 AppVersion 定义")
+>       self.assertEqual(match.group(1), offline_oj.__version__,
+                         "安装包版本与 offline_oj.__version__ 不一致")
+E       AssertionError: '2.0.0' != '2.1.1'
+E       - 2.0.0
+E       + 2.1.1
+E        : 安装包版本与 offline_oj.__version__ 不一致
+
+tests\test_packaging.py:71: AssertionError
+______ VersionConsistencyTest.test_semantic_version_matches_version_info ______
+
+self = <test_packaging.VersionConsistencyTest testMethod=test_semantic_version_matches_version_info>
+
+    def test_semantic_version_matches_version_info(self):
+        """``"2.0.0"`` 与 ``(2, 0, 0, 0)`` 必须是同一个版本（低位补零后相等）。"""
+        parts = tuple(int(part) for part in offline_oj.__version__.split("."))
+        padded = parts + (0,) * max(0, 4 - len(parts))
+>       self.assertEqual(padded, tuple(offline_oj.__version_info__))
+E       AssertionError: Tuples differ: (2, 1, 1, 0) != (2, 0, 0, 0)
+E       
+E       First differing element 1:
+E       1
+E       0
+E       
+E       - (2, 1, 1, 0)
+E       ?     ^  ^
+E       
+E       + (2, 0, 0, 0)
+E       ?     ^  ^
+
+tests\test_packaging.py:87: AssertionError
+============================== warnings summary ===============================
+offline_oj\core\models.py:319
+  E:\dev\oj\offline_oj\core\models.py:319: PytestCollectionWarning: cannot collect test class 'TestCase' because it has a __init__ constructor (from: tests/test_core.py)
+    @dataclass
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+FAILED tests/test_packaging.py::VersionConsistencyTest::test_installer_matches_the_app
+FAILED tests/test_packaging.py::VersionConsistencyTest::test_semantic_version_matches_version_info
