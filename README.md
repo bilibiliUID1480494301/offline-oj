@@ -19,6 +19,21 @@
 
 ## 快速开始
 
+**pip 安装（推荐）**：
+
+```bash
+pip install offline-oj
+# 命令行评测（无 GUI）：
+python -m offline_oj.cli --help
+# 图形界面：
+offline-oj
+```
+
+内核（评测/导出/雷同检测）与协议栈（加密/局域网会话）可作为库导入：
+`offline_oj.core.*`、`offline_oj.net.crypto`（零依赖 ChaCha20/X25519/SM4 套件）。
+
+**源码运行**：
+
 ```powershell
 # 1. 安装依赖
 python -m venv .venv
@@ -848,10 +863,10 @@ Get-Content .\build\frozen-check\logs\app.log
 > 写的时候踩了一个**不报错**的坑：第一版只写了 `LinkInfo`（里面已有完整路径），
 > 省掉了 `LinkTargetIDList`，结果 `startfile` 直接报 `WinError 1155`（没有关联）——
 > 系统压根不认这个文件是快捷方式。**别猜规范，去看真货**：把资源管理器自己写的
-> `ZCode.lnk` / `OneDrive.lnk` / `爱奇艺.lnk` 拆开，三个都带着 200~430 字节的这段。
+> `Steam.lnk` / `OneDrive.lnk` / `爱奇艺.lnk` 拆开，三个都带着 200~430 字节的这段。
 > PIDL 的格式（逐级 item ID）手写不现实，所以用 `SHParseDisplayName`
 > （普通 Win32 函数，不是 COM）让 shell 自己拼。顺带量到一条约定：
-> `CountCharacters` **不含**结尾的 NUL（`'ZCode'` 是 5 不是 6）——
+> `CountCharacters` **不含**结尾的 NUL（`'Steam'` 是 5 不是 6）——
 > 含进去也不会立刻报错，只会让后面几段字符串整体错位。
 >
 > 验完别忘了**让系统自己解析一次**：`os.startfile(lnk)` 起得来、

@@ -4,11 +4,11 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "offline-oj"
-version = "2.0.0"
+version = "2.1.0"
 description = "离线 OJ 系统 —— 面向 Windows 10/11 的本地代码评测客户端"
 readme = "README.md"
 requires-python = ">=3.10"
-license = { text = "Proprietary" }
+license = { text = "MIT" }
 authors = [{ name = "Offline OJ Project" }]
 keywords = ["oj", "judge", "offline", "windows", "desktop"]
 classifiers = [
@@ -42,6 +42,7 @@ offline-oj-cli = "offline_oj.cli:main"
 packages = [
     "offline_oj",
     "offline_oj.core",
+    "offline_oj.net",
     "offline_oj.ui",
     "offline_oj.ui.panels",
     "offline_oj.win32",

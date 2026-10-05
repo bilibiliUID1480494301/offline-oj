@@ -108,3 +108,19 @@ def _install_unique_mktemp() -> None:
 
 
 _install_unique_mktemp()
+
+
+# ---------------------------------------------------------------------------
+# 数据根隔离：每个用例的 %LOCALAPPDATA%\OfflineOJ 都指向本次用例的临时目录。
+# 内核套件（records/export/roster）原来不设 OFFLINE_OJ_HOME，与其它套件
+# 凑到一起时会撞上真实数据根里的意外文件而随机挂。
+# paths.local_app_data() 每次调用都读环境变量，进程内 setenv 即全局生效。
+# ---------------------------------------------------------------------------
+
+import pytest as _pytest
+
+
+@_pytest.fixture(autouse=True)
+def _isolated_data_root(tmp_path, monkeypatch):
+    monkeypatch.setenv("OFFLINE_OJ_HOME", str(tmp_path / "ojdata"))
+    yield
