@@ -36,15 +36,40 @@ from .core.similarity import analyse as _analyse
 __all__ = [
     "judge",
     "detect_similarity",
+    "similarity_diff",
     "export_report",
     "ExportData",
     "export",
     "export_bundle",
+    "open_repository",
+    "Repo",
+    "import_problems",
+    "export_problems",
+    "list_exam_archives",
+    "read_exam_archive",
+    "load_roster",
+    "generate_passcode",
+    "check_toolchain",
+    "similarity",
+    "encrypt_message",
+    "decrypt_message",
     "SUPPORTED_SUITES",
 ]
 
 # 加密套件重导出 / crypto re-exports
 from .net.crypto import SUPPORTED_SUITES  # noqa: E402,F401
+from .net.crypto import (  # noqa: E402,F401
+    DEFAULT_SUITE,
+    SUPPORTED_SUITES as _ALL_SUITES,
+    aead_decrypt_suite,
+    aead_encrypt_suite,
+    derive_secret_key,
+    negotiate_suite,
+    random_nonce,
+    random_salt,
+)
+from .core.compilers import CompilerDetector
+from .core.roster import generate_passcode
 
 #: 各语言默认的编译/解释器探测键 / compiler probe keys per language
 _DETECT_KEYS = {"cpp": "cpp", "c": "c", "java": "javac"}
@@ -234,3 +259,214 @@ def export_report(
     if sections is not None:
         kwargs["sections"] = sections
     return export(path, data, fmt, **kwargs)
+
+
+# ---------------------------------------------------------------------------
+# 题库 / 题目导入导出 / 考试档案 / 花名册 / 工具链 / 加密便捷层
+# ---------------------------------------------------------------------------
+
+
+class Repo:
+    """题库的薄封装 / Thin wrapper over :class:`ProblemRepository`.
+
+    中文：``open_repository(dir)`` 创建；add/get/list/search/remove 直接
+    喂 dict、拿 dict，省去理解内部类型。底层就是 ProblemRepository，
+    与 GUI / CLI 完全同一份文件格式（problems.json + problem_resources/）。
+
+    English: thin facade over ``ProblemRepository`` — feed dicts, get dicts.
+    Same on-disk format as the GUI and the CLI.
+    """
+
+    def __init__(self, data_dir):
+        from .core.repository import ProblemRepository
+
+        base = Path(data_dir)
+        base.mkdir(parents=True, exist_ok=True)
+        self._repo = ProblemRepository(
+            base / "problems.json", base / "problem_resources"
+        )
+        self._repo.load()
+
+    # -- 查询 / queries ------------------------------------------------------
+
+    def count(self):
+        return len(self._repo)
+
+    def ids(self):
+        return self._repo.ids()
+
+    def get(self, problem_id):
+        """单题详情 dict；不存在返回 None / one problem as dict, or None."""
+        p = self._repo.get(problem_id)
+        return p.to_dict() if p else None
+
+    def list_problems(self):
+        return [p.to_dict() for p in self._repo.all()]
+
+    def search(self, query):
+        return [p.to_dict() for p in self._repo.search(query)]
+
+    def stats(self):
+        s = self._repo.stats()
+        return {"total": s.total, "testcases": s.testcases,
+                "with_description": s.with_description, "latest": s.latest}
+
+    # -- 变更 / mutations ----------------------------------------------------
+
+    def add(self, problem, *, strategy: str = "rename"):
+        """添加/更新一道题（喂 dict），返回题目 ID / add one problem, return its id."""
+        from .core.models import Problem as _Problem
+
+        p = problem if isinstance(problem, _Problem) else _Problem.from_dict(dict(problem))
+        pid = self._repo.put(p, strategy=strategy)
+        self.save()  # 底库只改内存，封装层负责落盘
+        return pid
+
+    def remove(self, problem_id):
+        removed = self._repo.remove(problem_id) is not None
+        if removed:
+            self.save()
+        return removed
+
+    def save(self):
+        self._repo.save()
+
+    def __len__(self):
+        return len(self._repo)
+
+    def __contains__(self, problem_id):
+        return problem_id in self._repo
+
+
+def open_repository(data_dir):
+    """打开（不存在则创建）一个题库 / open (or create) a problem repository.
+
+    目录里生成 ``problems.json`` 与 ``problem_resources/``，与 GUI / CLI 同格式。
+    """
+    return Repo(data_dir)
+
+
+def import_problems(repo, path, *, strategy: str = "rename"):
+    """Import problems from a zip / folder / single JSON into a repo.
+
+    按扩展名自动选择导入方式（.zip / 目录 / 单个 .json），返回
+    ``{"imported": n, "skipped": n, "failed": n, "overwritten": n, "renamed": n}``。
+    """
+    from .core.archive import ProblemArchive
+
+    target = Path(path)
+    pa = ProblemArchive(repo._repo)  # noqa: SLF001 — 同包内的封装层
+    if target.is_dir():
+        report = pa.import_folder(target, strategy=strategy)
+    elif target.suffix.lower() == ".zip":
+        report = pa.import_zip(target, strategy=strategy)
+    else:
+        report = pa.import_single(target, strategy=strategy)
+    return {"imported": report.imported, "skipped": report.skipped,
+            "failed": report.failed, "overwritten": report.overwritten,
+            "renamed": report.renamed}
+
+
+def export_problems(repo, zip_path, problem_ids=None):
+    """Export problems (all, or the given ids) into a zip / 打包导出题目。
+
+    Returns the number of problems written / 返回导出的题目数。
+    """
+    from .core.archive import ProblemArchive
+
+    pa = ProblemArchive(repo._repo)  # noqa: SLF001 — 同包内的封装层
+    if problem_ids is None:
+        problems = repo._repo.all()  # noqa: SLF001
+    else:
+        problems = [p for pid in problem_ids if (p := repo._repo.get(pid))]
+    return pa.export_zip(zip_path, problems)
+
+
+def list_exam_archives(root):
+    """List exam archives under a directory / 列出目录下的全部考试档案。
+
+    每项含 ``name / directory / started_at / contestants / problems / integrity_ok``。
+    """
+    from .core.records import list_archives as _list
+
+    return [s.__dict__ | {"directory": str(s.directory)} for s in _list(root)]
+
+
+def read_exam_archive(directory):
+    """Read one exam archive / 读回一份考试档案。
+
+    Returns record (meta + roster + leaderboard) / submissions / integrity_ok。
+    """
+    from .core.records import read_archive as _read
+
+    a = _read(directory)
+    return {
+        "record": a.record.to_dict(),
+        "manifest": a.manifest.to_dict(),
+        "submissions": a.submissions,
+        "leaderboard": a.leaderboard,
+        "integrity_ok": a.integrity_ok,
+        "skipped_lines": a.skipped_lines,
+    }
+
+
+def load_roster(source):
+    """Load a contestant roster from CSV text or file / 从 CSV 文本或文件读名单。
+
+    Returns :class:`offline_oj.core.roster.Roster`（可迭代出 Contestant）。
+    """
+    from .core.roster import Roster
+
+    p = Path(source)
+    if p.exists():
+        return Roster.load_csv(p)
+    return Roster.from_csv_text(str(source))
+
+
+def check_toolchain(*, keys=("cpp", "c", "python", "javac", "java")):
+    """Detect and self-test local toolchains / 探测并自检本机工具链。
+
+    Returns ``{key: {found, path, version, works, detail}}``——建站/开考前
+    先跑一遍，能省掉"学生端编译不了"的一半排查。
+    """
+    result = {}
+    for key, info in CompilerDetector.detect_all(keys).items():
+        if key == "python" and (info is None or not info.works):
+            # 当前解释器本身就是 python：PATH 里没有 python 命令也算可用
+            info = info.with_status(True, sys.executable) if info else None
+            result[key] = {"found": True, "path": sys.executable,
+                           "version": "", "works": True, "detail": "sys.executable"}
+            continue
+        result[key] = {
+            "found": info is not None,
+            "path": info.path if info else "",
+            "version": info.version if info else "",
+            "works": bool(info and info.works),
+            "detail": info.detail if info else "",
+        }
+    return result
+
+
+def similarity_diff(left, right, *, language: str = "cpp"):
+    """Line-level diff of two submissions / 两份代码的行级差异。
+
+    Returns a list of ``{"kind": "same|add|del|change", "left": n, "right": n, ...}``。
+    """
+    from .core.similarity import diff_lines as _diff
+
+    return [d.__dict__ for d in _diff(left, right, language=language)]
+
+
+def encrypt_message(key, plaintext, *, aad=b""):
+    """AEAD encrypt with a random nonce prefix / 加密（随机 nonce 前缀，开箱即用）。
+
+    ``返回 bytes = nonce(12B) || ciphertext+tag``。key 长度须匹配套件
+    （ChaCha20=32B；SM4-GCM=16B，见 ``offline_oj.api.SUPPORTED_SUITES``）。
+    """
+    nonce = random_nonce()
+    return nonce + aead_encrypt_suite(DEFAULT_SUITE, key, nonce, plaintext, aad)
+
+
+def decrypt_message(key, blob, *, aad=b""):
+    """Decrypt a blob produced by :func:`encrypt_message` / 解密 encrypt_message 的产物。"""
+    return aead_decrypt_suite(DEFAULT_SUITE, key, blob[:12], blob[12:], aad)

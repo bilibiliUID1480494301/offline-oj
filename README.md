@@ -94,6 +94,24 @@ report = api.detect_similarity(rows)
 api.export_report('成绩单.docx', data, fmt='docx')
 ```
 
+更多能力：
+
+```python
+repo = api.open_repository('./my_problems')        # 题库：增删改查 + 搜索
+repo.add({'id': 'P1001', 'title': 'A+B', 'testcases': [...]})
+api.import_problems(repo, '题目包.zip')            # zip/目录/单文件自动识别
+api.export_problems(repo, '导出.zip')              # 打包导出
+
+api.check_toolchain()                              # 探测并自检本机编译器
+api.list_exam_archives('./archives')               # 考试档案列表/读取
+api.load_roster('名单.csv')                        # 花名册
+api.similarity_diff(code1, code2)                  # 行级差异
+
+# 加密便捷层（nonce 自动生成前缀）：
+blob = api.encrypt_message(key, b'secret')
+api.decrypt_message(key, blob)
+```
+
 加密协议栈（零依赖 X25519 / SM4-GCM / ChaCha20-Poly1305）从
 `offline_oj.net.crypto` 导入，`SUPPORTED_SUITES` 可查支持的套件。
 
